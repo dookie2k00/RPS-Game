@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Slot Machine RPS</title>
+  <style>
+    body {
+      background: #222;
+      color: #fff;
+      font-family: "Courier New", monospace;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: gold;
+      text-shadow: 0 0 10px red;
+    }
+    .machine {
+      margin: 40px auto;
+      width: 320px;
+      border: 5px solid gold;
+      border-radius: 15px;
+      background: #444;
+      padding: 20px;
+    }
+    .reels {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .reel {
+      width: 100px;
+      height: 100px;
+      border: 3px solid #999;
+      border-radius: 10px;
+      background: #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: bold;
+      color: white;
+    }
+    .choice-buttons {
+      margin: 20px;
+      display: flex;
+      justify-content: space-around;
+    }
+    .choice-button {
+      font-size: 40px;
+      cursor: pointer;
+      margin: 0 10px;
+      transition: transform 0.2s;
+    }
+    .choice-button:hover {
+      transform: scale(1.2);
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .scoreboard {
+      margin-top: 15px;
+      font-size: 18px;
+    }
+    button {
+      background: red;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 10px;
+      box-shadow: 0 0 5px gold;
+    }
+    button:hover {
+      background: darkred;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎰 Rock Paper Scissors 🎰</h1>
+  <div class="machine">
+    <div id="choicePrompt">
+      <p>Choose your move:</p>
+      <div class="choice-buttons">
+        <span class="choice-button" onclick="chooseMove('Rock')">💎</span>
+        <span class="choice-button" onclick="chooseMove('Paper')">📄</span>
+        <span class="choice-button" onclick="chooseMove('Scissors')">✂️</span>
+      </div>
+    </div>
+
+    <div class="reels">
+      <div class="reel" id="player">❓</div>
+      <div class="reel" id="bot">❓</div>
+    </div>
+
+    <button onclick="resetGame()">RESET</button>
+
+    <div id="result"></div>
+
+    <div class="scoreboard">
+      Player: <span id="playerScore">0</span> |
+      Bot: <span id="botScore">0</span> |
+      Ties: <span id="tieScore">0</span>
+    </div>
+  </div>
+
+  <!-- Sound effects -->
+  <audio id="spinSound" src="https://actions.google.com/sounds/v1/foley/coin_spin.ogg" loop></audio>
+  <audio id="winSound" src="https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg"></audio>
+  <audio id="loseSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+  <audio id="tieSound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg"></audio>
+
+  <script>
+    const choices = ["Rock", "Paper", "Scissors"];
+    let playerChoice = null;
+    let playerScore = 0, botScore = 0, tieScore = 0;
+
+    // Define emojis for moves
+    const emojis = {
+      Rock: "💎",
+      Paper: "📄",
+      Scissors: "✂️"
+    };
+
+    // Prompt the player to choose their move and start the game immediately
+    function chooseMove(choice) {
+      playerChoice = choice;
+      document.getElementById("result").textContent = "You chose " + emojis[playerChoice] + " (" + playerChoice + "). Let's see what the bot picks!";
+      playGame();  // Call playGame immediately after selecting a move
+    }
+
+    function playGame() {
+      let playerReel = document.getElementById("player");
+      let botReel = document.getElementById("bot");
+      let resultBox = document.getElementById("result");
+
+      // Randomly select bot's choice
+      const botChoice = choices[Math.floor(Math.random() * 3)];
+
+      // Update the reels with the player's and bot's choices
+      playerReel.textContent = emojis[playerChoice] + " (" + playerChoice + ")";
+      botReel.textContent = emojis[botChoice] + " (" + botChoice + ")";
+
+      // Determine the result
+      let result = "";
+      if (playerChoice === botChoice) {
+        result = `It's a Tie! Both chose ${emojis[playerChoice]} (${playerChoice})`;
+        tieScore++;
+        document.getElementById("tieSound").play();
+      } else if (
+        (playerChoice === "Rock" && botChoice === "Scissors") ||
+        (playerChoice === "Paper" && botChoice === "Rock") ||
+        (playerChoice === "Scissors" && botChoice === "Paper")
+      ) {
+        result = `🎉 You Win! ${emojis[playerChoice]} (${playerChoice}) beats ${emojis[botChoice]} (${botChoice})`;
+        playerScore++;
+        document.getElementById("winSound").play();
+      } else {
+        result = `😢 Bot Wins! ${emojis[botChoice]} (${botChoice}) beats ${emojis[playerChoice]} (${playerChoice})`;
+        botScore++;
+        document.getElementById("loseSound").play();
+      }
+
+      // Update the scoreboard
+      document.getElementById("playerScore").textContent = playerScore;
+      document.getElementById("botScore").textContent = botScore;
+      document.getElementById("tieScore").textContent = tieScore;
+
+      // Display the result with emojis
+      resultBox.textContent = result;
+    }
+
+    function resetGame() {
+      // Reset player choice, reels, and result
+      playerChoice = null;
+      document.getElementById("result").textContent = "";
+      document.getElementById("player").textContent = "❓";
+      document.getElementById("bot").textContent = "❓";
+
+      // Reset scores
+      playerScore = 0;
+      botScore = 0;
+      tieScore = 0;
+
+      // Update the scoreboard to reflect the reset
+      document.getElementById("playerScore").textContent = playerScore;
+      document.getElementById("botScore").textContent = botScore;
+      document.getElementById("tieScore").textContent = tieScore;
+    }
+  </script>
+</body>
+</html>
